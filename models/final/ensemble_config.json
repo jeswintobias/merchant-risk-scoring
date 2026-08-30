@@ -1,0 +1,21 @@
+{
+  "xgb_weight": 0.9500000000000001,
+  "lgb_weight": 0.04999999999999993,
+  "risk_thresholds": {
+    "auto_approve": 0.05,
+    "enhanced_review": 0.2,
+    "manual_review": 0.5,
+    "auto_reject": 1.0
+  },
+  "risk_tier_labels": {
+    "auto_approve": "\ud83d\udfe2 LOW RISK \u2014 Release Payouts",
+    "enhanced_review": "\ud83d\udfe1 MEDIUM RISK \u2014 Enhanced Monitoring",
+    "manual_review": "\ud83d\udfe0 HIGH RISK \u2014 Hold Payouts for Review",
+    "auto_reject": "\ud83d\udd34 CRITICAL RISK \u2014 Freeze Account"
+  },
+  "ensemble_auc": 0.9520093998882888,
+  "xgb_auc": 0.9478707157186346,
+  "lgb_auc": 0.9468214899087237,
+  "feature_count": 434,
+  "created_at": "2026-08-30T15:56:09.866743"
+}

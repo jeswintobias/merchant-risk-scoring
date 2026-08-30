@@ -1,0 +1,73 @@
+{
+  "model_type": "XGBoost + LightGBM Ensemble",
+  "problem_type": "Post-Onboarding Merchant Risk & Fraud Detection",
+  "dataset": "IEEE-CIS Fraud Detection (Vesta Corporation)",
+  "training_rows": 590540,
+  "feature_count": 434,
+  "cross_validation": {
+    "strategy": "GroupKFold by month",
+    "n_splits": 6,
+    "group_key": "DT_M (approximate month)"
+  },
+  "xgboost": {
+    "params": {
+      "n_estimators": "2500",
+      "max_depth": "12",
+      "learning_rate": "0.02",
+      "subsample": "0.8",
+      "colsample_bytree": "0.4",
+      "missing": "-1",
+      "eval_metric": "auc",
+      "scale_pos_weight": "27.579586700866283",
+      "tree_method": "hist",
+      "n_jobs": "-1",
+      "random_state": "42",
+      "verbosity": "0"
+    },
+    "fold_aucs": [
+      0.9245967594216457,
+      0.9518053884187516,
+      0.9542993163079843,
+      0.956904038211029,
+      0.9469300554891155,
+      0.9517671526910917
+    ],
+    "mean_auc": 0.9477171184232697,
+    "std_auc": 0.01077042262969171,
+    "training_time_minutes": 82.76299798488617
+  },
+  "lightgbm": {
+    "params": {
+      "objective": "binary",
+      "metric": "auc",
+      "boosting_type": "gbdt",
+      "learning_rate": "0.02",
+      "num_leaves": "256",
+      "max_depth": "12",
+      "subsample": "0.8",
+      "colsample_bytree": "0.4",
+      "scale_pos_weight": "27.579586700866283",
+      "n_jobs": "-1",
+      "random_state": "42",
+      "verbose": "-1"
+    },
+    "fold_aucs": [
+      0.9241945038649926,
+      0.9539019664385116,
+      0.9533237762110828,
+      0.9566661815402793,
+      0.940852164167197,
+      0.9544501630662879
+    ],
+    "mean_auc": 0.9472314592147252,
+    "std_auc": 0.011504581556584032,
+    "training_time_minutes": 10.043082880973817
+  },
+  "ensemble_auc": 0.9520093998882888,
+  "trained_at": "2026-08-30T15:56:09.867136",
+  "system": {
+    "machine": "arm64",
+    "system": "Darwin",
+    "python": "3.12.0"
+  }
+}

@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# Data (large files — download separately)
+data/ieee-fraud-detection/*.csv
+
+# Models (large binary files)
+models/final/*.json
+models/final/*.txt
+models/checkpoints/
+!models/final/ensemble_config.json
+!models/final/training_metadata.json
+!models/final/model_card.md
+
+# Node
+app/frontend/node_modules/
+app/frontend/dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Agents / IDE config
+.agents/
+.gemini/
