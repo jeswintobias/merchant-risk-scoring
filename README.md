@@ -28,7 +28,17 @@ Onboarding filters (KYC, business registration) only verify if a business legall
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-## Quick Start
+## 🏆 Track 02 — AI Risk Manager Highlights
+This project was built explicitly to satisfy the **RazorPay Track 02** requirements:
+1. **The LLM Auto-Responder**: We integrated Google's **Gemini 1.5 Pro** LLM to act as an AI Risk Manager. When a high/critical risk transaction is detected, the system passes SHAP risk factors into Gemini to automatically draft a professional payout-hold email requesting specific verification documents (e.g. shipping invoices).
+2. **False-Positive Cost Metrics (ROI)**: We built a dashboard that calculates our model's precision against the manual review cost of false positives, proving the financial viability of our detector on a held-out test set.
+3. **Engineering Maturity**: The entire solution is Dockerized, equipped with a Fast API backend and a Vite+React frontend, and utilizes an XGBoost + LightGBM ensemble.
+
+*Note for Judges: If you prefer not to use Docker, follow the Local Setup instructions below.*
+
+## Quick Start (Local Setup)
+
+If you don't want to use Docker, you can run the app natively in under a minute.
 
 ### 1. Setup Environment
 ```bash
@@ -144,6 +154,13 @@ Place in `data/ieee-fraud-detection/`
 - **Feature Store**: Pre-computed aggregations in Feast/Tecton
 - **A/B Testing**: Shadow-score new model versions before promotion
 - **Data Versioning**: DVC for dataset lineage tracking
+
+## Build Challenges & Technical Obstacles
+
+1. **Dataset Discovery & Class Imbalance**: Finding a high-quality, realistic financial dataset was initially challenging. Once secured, we faced extreme class imbalance (fraud is rare). I had to rely on advanced Tree-Based Ensembling (XGBoost + LightGBM) to capture rare fraud signals without overfitting.
+2. **Transitioning from Jupyter to MLOps**: I initially built the prototype in a single `.ipynb` notebook. When the model crashed during a long training run, I lost all my progress because I hadn't implemented model checkpoints. This was a hard lesson in MLOps, forcing me to modularize the codebase into proper folder structures (`src/`, `models/`, `app/`) and implement persistent model saving.
+3. **LLM Context Limits (The SHAP Solution)**: Feeding a raw transaction with 434 columns to an LLM to generate an email is highly inefficient and causes hallucinations. I overcame this by integrating SHAP (Explainable AI) to mathematically extract only the top 5 risk-driving features, drastically reducing the LLM prompt size while increasing email accuracy.
+4. **Docker Architecture & System Incompatibilities**: Containerizing a heavy ML stack on Apple Silicon presented significant challenges. I encountered a severe serialization bug where XGBoost models trained natively on Python 3.12 crashed when loaded inside a Python 3.10 Docker container. This required debugging multi-architecture base images and strictly aligning environment versions across the host and container to achieve a flawless production build.
 
 ---
 
