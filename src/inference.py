@@ -98,6 +98,9 @@ class MerchantRiskScorer:
             'lgb_scores': np.array of LightGBM-only scores
             'explanations': list of dicts (if explain=True)
         """
+        # Work on a copy to avoid mutating the caller's DataFrame
+        X = X.copy()
+        
         cols = self.feature_list if self.feature_list else list(X.columns)
         
         # Ensure all features exist, fill missing with -1
@@ -111,6 +114,9 @@ class MerchantRiskScorer:
         
         # Ensemble blend
         risk_scores = self.xgb_weight * xgb_scores + self.lgb_weight * lgb_scores
+        
+        # Clamp to [0, 1] range for safety
+        risk_scores = np.clip(risk_scores, 0.0, 1.0)
         
         # Classify into risk tiers
         risk_tiers = []
@@ -130,8 +136,12 @@ class MerchantRiskScorer:
         
         # SHAP explanations
         if explain and self.explainer is not None:
-            explanations = self._explain(X[cols])
-            result['explanations'] = explanations
+            try:
+                explanations = self._explain(X[cols])
+                result['explanations'] = explanations
+            except Exception as e:
+                print(f"⚠️  SHAP explanation failed: {e}")
+                result['explanations'] = []
         
         return result
     

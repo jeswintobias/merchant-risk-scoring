@@ -1,6 +1,6 @@
 {
-  "xgb_weight": 0.9500000000000001,
-  "lgb_weight": 0.04999999999999993,
+  "xgb_weight": 0.70,
+  "lgb_weight": 0.30,
   "risk_thresholds": {
     "auto_approve": 0.05,
     "enhanced_review": 0.2,
