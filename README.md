@@ -77,6 +77,7 @@ Open http://localhost:5173 for the dashboard.
 
 ```
 ├── data/                          # IEEE-CIS Fraud Detection dataset
+│   ├── demo_batch.csv             # Demo data for batch testing
 │   └── ieee-fraud-detection/
 ├── notebooks/
 │   ├── 01_eda.py                  # Standalone EDA (run first)
@@ -132,6 +133,7 @@ Place in `data/ieee-fraud-detection/`
 
 - **47+ engineered features**: UID-based velocity, amount stats, device entropy
 - **SHAP explainability**: Every risk decision is explainable (RBI-compliant)
+- **Batch CSV Analysis**: Process bulk historical records for instant portfolio risk assessment
 - **Fold checkpointing**: Training saves every fold model — resume on crash
 - **Demo mode**: Dashboard works without trained model (heuristic scoring)
 - **MLOps narrative**: Model monitoring, drift detection, A/B testing strategy
@@ -143,7 +145,7 @@ Place in `data/ieee-fraud-detection/`
 | ML Models | XGBoost, LightGBM |
 | Explainability | SHAP |
 | Backend API | FastAPI + Uvicorn |
-| Frontend | React + Vite |
+| Frontend | React + Vite + Tailwind CSS v4 + shadcn/ui |
 | Data Processing | Pandas, NumPy, Scikit-learn |
 | Visualisation | Matplotlib, Seaborn |
 
