@@ -36,9 +36,19 @@ This project was built explicitly to satisfy the **RazorPay Track 02** requireme
 
 *Note for Judges: If you prefer not to use Docker, follow the Local Setup instructions below.*
 
+## Quick Start (Docker)
+
+The easiest way to run the entire stack (Backend + Frontend) is via Docker Compose:
+
+```bash
+docker-compose up --build
+```
+- Dashboard: http://localhost:5173
+- API / Docs: http://localhost:8000/docs
+
 ## Quick Start (Local Setup)
 
-If you don't want to use Docker, you can run the app natively in under a minute.
+If you don't want to use Docker, you can run the app natively in under a minute using the `requirements.txt` fallback.
 
 ### 1. Setup Environment
 ```bash
