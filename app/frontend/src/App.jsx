@@ -1,4 +1,18 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Toaster, toast } from "sonner"
+import { Shield, ShieldAlert, TriangleAlert, CircleCheck, Zap, BarChart3, Upload, Loader2, Mail, CheckCircle2, AlertCircle, X, ChevronRight, FileDown } from "lucide-react"
+import { useTheme } from "next-themes"
 import './index.css'
 
 const API_BASE = 'http://localhost:8000'
@@ -77,15 +91,16 @@ async function getModelInfo() {
 function ErrorBanner({ message, onDismiss }) {
   if (!message) return null
   return (
-    <div className="error-banner">
-      <div className="error-banner-content">
-        <span className="error-banner-icon">⚠️</span>
-        <span className="error-banner-text">{message}</span>
-      </div>
+    <Alert variant="destructive" className="mb-6 relative">
+      <AlertCircle className="h-4 w-4" />
+      <AlertTitle>Error</AlertTitle>
+      <AlertDescription>{message}</AlertDescription>
       {onDismiss && (
-        <button className="error-banner-dismiss" onClick={onDismiss}>✕</button>
+        <button onClick={onDismiss} className="absolute right-4 top-4 opacity-70 hover:opacity-100 transition-opacity">
+          <X className="h-4 w-4" />
+        </button>
       )}
-    </div>
+    </Alert>
   )
 }
 
@@ -93,24 +108,39 @@ function ErrorBanner({ message, onDismiss }) {
 // HEADER
 // ══════════════════════════════════════════════════════════
 function Header({ health, connectionError }) {
+  const { theme, setTheme } = useTheme()
   return (
-    <header className="header">
-      <div className="header-left">
-        <div className="header-logo">🛡️</div>
+    <header className="flex items-center justify-between px-6 py-4 border-b bg-card text-card-foreground">
+      <div className="flex items-center gap-4">
+        <div className="bg-primary text-primary-foreground p-2 rounded-lg shadow-sm">
+          <Shield className="h-6 w-6" />
+        </div>
         <div>
-          <div className="header-title">Merchant Risk Engine</div>
-          <div className="header-subtitle">Post-Onboarding Fraud Detection</div>
+          <div className="text-xl font-bold leading-tight tracking-tight">Merchant Risk Engine</div>
+          <div className="text-xs text-muted-foreground font-medium">Post-Onboarding Fraud Detection</div>
         </div>
       </div>
-      <div className="header-right">
-        <div className={`status-badge ${connectionError ? 'offline' : health ? 'online' : ''}`}>
-          <span className="status-dot" />
+      <div className="flex items-center gap-4">
+        <Badge 
+          variant="outline" 
+          className={`flex items-center gap-2 py-1.5 px-3 rounded-full ${
+            connectionError ? 'border-destructive text-destructive' : 
+            health ? 'border-green-500 text-green-500 bg-green-500/10' : ''
+          }`}
+        >
+          <span className={`h-2 w-2 rounded-full ${
+            connectionError ? 'bg-destructive' : 
+            health ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground'
+          }`} />
           {connectionError
             ? 'Disconnected'
             : health
               ? `${health.mode === 'production' ? 'Model Active' : 'Demo Mode'}`
               : 'Connecting…'}
-        </div>
+        </Badge>
+        <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="rounded-full">
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </Button>
       </div>
     </header>
   )
@@ -124,47 +154,68 @@ function StatsOverview({ modelInfo }) {
     ? modelInfo.ensemble_auc.toFixed(4)
     : modelInfo?.scoring_mode === 'demo' ? 'Demo' : '—'
 
-  const featureCount = modelInfo?.feature_count
-    ? `${modelInfo.feature_count}`
-    : '434+'
-
   const stats = [
     {
       label: 'Ensemble AUC',
       value: auc,
       change: modelInfo?.model_type || 'XGBoost + LightGBM',
-      color: 'blue',
+      icon: <BarChart3 className="h-4 w-4 text-blue-500" />
     },
     {
       label: 'Training Data',
       value: '590K',
       change: 'IEEE-CIS Transactions',
-      color: 'purple',
+      icon: <DatabaseIcon className="h-4 w-4 text-purple-500" />
     },
     {
       label: 'False Positive Cost',
       value: '$4,250/mo',
       change: 'Based on $50 manual review cost',
-      color: 'orange',
+      icon: <DollarSignIcon className="h-4 w-4 text-orange-500" />
     },
     {
       label: 'Model Precision',
       value: '94.2%',
       change: '@ 0.5 Risk Threshold',
-      color: 'green',
+      icon: <TargetIcon className="h-4 w-4 text-green-500" />
     },
   ]
 
   return (
-    <div className="stats-grid">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       {stats.map((s, i) => (
-        <div key={i} className={`stat-card ${s.color}`}>
-          <div className="stat-label">{s.label}</div>
-          <div className="stat-value">{s.value}</div>
-          <div className="stat-change" style={{ color: 'var(--text-muted)' }}>{s.change}</div>
-        </div>
+        <Card key={i} className="shadow-sm hover:shadow transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              {s.label}
+            </CardTitle>
+            {s.icon}
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{s.value}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {s.change}
+            </p>
+          </CardContent>
+        </Card>
       ))}
     </div>
+  )
+}
+
+function DatabaseIcon(props) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+  )
+}
+function DollarSignIcon(props) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+  )
+}
+function TargetIcon(props) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
   )
 }
 
@@ -190,7 +241,6 @@ function ScoringPanel() {
   const [error, setError] = useState(null)
   const [demoMerchants, setDemoMerchants] = useState([])
   
-  // Auto-Responder state
   const [alertLoading, setAlertLoading] = useState(false)
   const [alertDraft, setAlertDraft] = useState(null)
 
@@ -211,15 +261,7 @@ function ScoringPanel() {
     })
     newForm.merchant_name = merchant.name
     setForm(newForm)
-  }
-
-  const handleDemoSelect = (e) => {
-    const selectedName = e.target.value;
-    if (!selectedName) return;
-    const merchant = demoMerchants.find(m => m.name === selectedName);
-    if (merchant) {
-      handleDemoClick(merchant);
-    }
+    toast.success(`Loaded demo profile: ${merchant.name}`)
   }
 
   const handleSubmit = async (e) => {
@@ -235,10 +277,12 @@ function ScoringPanel() {
       }
       const res = await scoreTransaction(payload)
       setResult(res)
+      toast.success("Transaction analyzed successfully")
     } catch (err) {
       console.error('Scoring failed:', err)
-      setError(err.message || 'Failed to score transaction. Check that the backend is running.')
+      setError(err.message || 'Failed to score transaction.')
       setResult(null)
+      toast.error("Analysis failed")
     } finally {
       setLoading(false)
     }
@@ -256,128 +300,156 @@ function ScoringPanel() {
         risk_factors: result.top_risk_factors
       })
       setAlertDraft(draft.email_draft)
+      toast.success("Alert drafted successfully")
     } catch (err) {
       setError("Failed to generate alert email: " + err.message)
+      toast.error("Failed to generate draft")
     } finally {
       setAlertLoading(false)
     }
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <div className="flex flex-col gap-6">
       <ErrorBanner message={error} onDismiss={() => setError(null)} />
 
-      <div style={{ marginBottom: '0', display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-card)', padding: '10px 16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
-        <div style={{ fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span>🎭</span> Quick Test Profile:
-        </div>
-        <select className="form-select" style={{ flex: 1, maxWidth: '400px' }} onChange={handleDemoSelect} defaultValue="">
-          <option value="" disabled>Select a demo profile to autofill...</option>
-          {demoMerchants.map((m, i) => (
-            <option key={i} value={m.name}>{m.name} — {m.description}</option>
-          ))}
-        </select>
-      </div>
+      <Card className="bg-secondary/20 shadow-none border-border">
+        <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
+            <span className="text-xl">🎭</span> Quick Test Profile:
+          </div>
+          <Select onValueChange={(val) => {
+            const m = demoMerchants.find(x => x.name === val)
+            if (m) handleDemoClick(m)
+          }}>
+            <SelectTrigger className="w-full sm:max-w-[400px] bg-background">
+              <SelectValue placeholder="Select a demo profile to autofill..." />
+            </SelectTrigger>
+            <SelectContent>
+              {demoMerchants.map((m, i) => (
+                <SelectItem key={i} value={m.name}>{m.name} — {m.description}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
 
-      <div className="scoring-layout">
-        <div className="card">
-          <div className="card-title">⚡ Score a Transaction</div>
-          <form onSubmit={handleSubmit}>
-            <div className="form-grid">
-              <div className="form-group full-width">
-                <label className="form-label">Merchant Name</label>
-                <input className="form-input" type="text" placeholder="e.g. Sharma Electronics, Jaipur"
-                  value={form.merchant_name}
-                  onChange={e => handleChange('merchant_name', e.target.value)} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Zap className="h-5 w-5 text-amber-500" />
+              Score a Transaction
+            </CardTitle>
+            <CardDescription>Enter transaction details below to run deep ML scoring.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Merchant Name</Label>
+                  <Input placeholder="e.g. Sharma Electronics, Jaipur"
+                    value={form.merchant_name}
+                    onChange={e => handleChange('merchant_name', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Amount (USD)</Label>
+                  <Input type="number" step="0.01" placeholder="45.99"
+                    value={form.transaction_amount}
+                    onChange={e => handleChange('transaction_amount', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Product Code</Label>
+                  <Select value={form.product_cd} onValueChange={v => handleChange('product_cd', v)}>
+                    <SelectTrigger><SelectValue/></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="W">W — Web</SelectItem>
+                      <SelectItem value="H">H — High Value</SelectItem>
+                      <SelectItem value="C">C — Card Present</SelectItem>
+                      <SelectItem value="S">S — Subscription</SelectItem>
+                      <SelectItem value="R">R — Recurring</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Card Brand</Label>
+                  <Select value={form.card_brand} onValueChange={v => handleChange('card_brand', v)}>
+                    <SelectTrigger className="capitalize"><SelectValue/></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="visa">Visa</SelectItem>
+                      <SelectItem value="mastercard">Mastercard</SelectItem>
+                      <SelectItem value="discover">Discover</SelectItem>
+                      <SelectItem value="american express">American Express</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Card Type</Label>
+                  <Select value={form.card_type} onValueChange={v => handleChange('card_type', v)}>
+                    <SelectTrigger className="capitalize"><SelectValue/></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="debit">Debit</SelectItem>
+                      <SelectItem value="credit">Credit</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Email Domain</Label>
+                  <Select value={form.email_domain} onValueChange={v => handleChange('email_domain', v)}>
+                    <SelectTrigger><SelectValue/></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="gmail.com">gmail.com</SelectItem>
+                      <SelectItem value="yahoo.com">yahoo.com</SelectItem>
+                      <SelectItem value="outlook.com">outlook.com</SelectItem>
+                      <SelectItem value="hotmail.com">hotmail.com</SelectItem>
+                      <SelectItem value="mail.com">mail.com</SelectItem>
+                      <SelectItem value="icloud.com">icloud.com</SelectItem>
+                      <SelectItem value="anonymous.com">anonymous.com</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Device Type</Label>
+                  <Select value={form.device_type} onValueChange={v => handleChange('device_type', v)}>
+                    <SelectTrigger className="capitalize"><SelectValue/></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="desktop">Desktop</SelectItem>
+                      <SelectItem value="mobile">Mobile</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Hour of Day (0-23)</Label>
+                  <Input type="number" min="0" max="23"
+                    value={form.hour_of_day}
+                    onChange={e => handleChange('hour_of_day', e.target.value)} />
+                </div>
+                <div className="flex items-center space-x-2 pt-8">
+                  <input type="checkbox" id="intl" className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    checked={form.is_international}
+                    onChange={e => handleChange('is_international', e.target.checked)} />
+                  <Label htmlFor="intl" className="cursor-pointer">International Transaction</Label>
+                </div>
               </div>
-              <div className="form-group">
-                <label className="form-label">Amount (USD)</label>
-                <input className="form-input" type="number" step="0.01" placeholder="45.99"
-                  value={form.transaction_amount}
-                  onChange={e => handleChange('transaction_amount', e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Product Code</label>
-                <select className="form-select" value={form.product_cd}
-                  onChange={e => handleChange('product_cd', e.target.value)}>
-                  <option value="W">W — Web</option>
-                  <option value="H">H — High Value</option>
-                  <option value="C">C — Card Present</option>
-                  <option value="S">S — Subscription</option>
-                  <option value="R">R — Recurring</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Card Brand</label>
-                <select className="form-select" value={form.card_brand}
-                  onChange={e => handleChange('card_brand', e.target.value)}>
-                  <option value="visa">Visa</option>
-                  <option value="mastercard">Mastercard</option>
-                  <option value="discover">Discover</option>
-                  <option value="american express">American Express</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Card Type</label>
-                <select className="form-select" value={form.card_type}
-                  onChange={e => handleChange('card_type', e.target.value)}>
-                  <option value="debit">Debit</option>
-                  <option value="credit">Credit</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Email Domain</label>
-                <select className="form-select" value={form.email_domain}
-                  onChange={e => handleChange('email_domain', e.target.value)}>
-                  <option value="gmail.com">gmail.com</option>
-                  <option value="yahoo.com">yahoo.com</option>
-                  <option value="outlook.com">outlook.com</option>
-                  <option value="hotmail.com">hotmail.com</option>
-                  <option value="mail.com">mail.com</option>
-                  <option value="icloud.com">icloud.com</option>
-                  <option value="anonymous.com">anonymous.com</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Device Type</label>
-                <select className="form-select" value={form.device_type}
-                  onChange={e => handleChange('device_type', e.target.value)}>
-                  <option value="desktop">Desktop</option>
-                  <option value="mobile">Mobile</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Hour of Day (0-23)</label>
-                <input className="form-input" type="number" min="0" max="23"
-                  value={form.hour_of_day}
-                  onChange={e => handleChange('hour_of_day', e.target.value)} />
-              </div>
-              <div className="form-checkbox-row">
-                <input className="form-checkbox" type="checkbox" id="intl"
-                  checked={form.is_international}
-                  onChange={e => handleChange('is_international', e.target.checked)} />
-                <label htmlFor="intl" style={{ fontSize: '13px', fontWeight: 600 }}>International Transaction</label>
-              </div>
-            </div>
-            <button type="submit" className={`btn-score ${loading ? 'loading' : ''}`} disabled={loading}>
-              {loading ? '' : '🛡️ Analyse Risk'}
-            </button>
-          </form>
-        </div>
+              <Button type="submit" className="w-full font-bold" size="lg" disabled={loading}>
+                {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Shield className="mr-2 h-5 w-5" />}
+                {loading ? 'Analyzing...' : 'Analyse Risk'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
 
-        <div>
+        <div className="flex flex-col h-full">
           {result ? (
             <ResultCard result={result} alertDraft={alertDraft} alertLoading={alertLoading} handleGenerateAlert={handleGenerateAlert} />
           ) : (
-            <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <div className="card-title">🎯 Analysis Result</div>
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 250, flexDirection: 'column', gap: 12 }}>
-                <div style={{ fontSize: 40, opacity: 0.3 }}>🛡️</div>
-                <div style={{ color: 'var(--text-muted)', fontSize: 14, textAlign: 'center' }}>
-                  Fill in merchant details and click<br /><strong>Analyse Risk</strong> to score a transaction
-                </div>
-              </div>
-            </div>
+            <Card className="flex flex-col h-full items-center justify-center min-h-[300px] border-dashed text-center p-8 bg-muted/30">
+              <ShieldAlert className="h-16 w-16 text-muted-foreground/30 mb-4" />
+              <CardTitle className="text-lg text-muted-foreground mb-2">Awaiting Data</CardTitle>
+              <CardDescription className="max-w-xs">
+                Fill in merchant details and click Analyse Risk to view the AI ensemble score.
+              </CardDescription>
+            </Card>
           )}
         </div>
       </div>
@@ -389,65 +461,92 @@ function ScoringPanel() {
 // RESULT CARD
 // ══════════════════════════════════════════════════════════
 function ResultCard({ result, alertDraft, alertLoading, handleGenerateAlert }) {
-  const tier = result.risk_tier
+  const tier = result.risk_tier // LOW, MEDIUM, HIGH, CRITICAL
+
+  const getTierColor = (t) => {
+    switch(t) {
+      case 'CRITICAL': return 'bg-risk-critical text-destructive-foreground'
+      case 'HIGH': return 'bg-risk-high text-destructive-foreground'
+      case 'MEDIUM': return 'bg-amber-500 text-primary-foreground'
+      case 'LOW': return 'bg-risk-low text-primary-foreground'
+      default: return 'bg-muted text-muted-foreground'
+    }
+  }
+
+  const getTierTextColor = (t) => {
+    switch(t) {
+      case 'CRITICAL': return 'text-risk-critical'
+      case 'HIGH': return 'text-risk-high'
+      case 'MEDIUM': return 'text-amber-500'
+      case 'LOW': return 'text-risk-low'
+      default: return 'text-muted-foreground'
+    }
+  }
+
   return (
-    <div className="result-card">
-      <div className={`result-header ${tier}`}>
-        <div className={`result-score ${tier}`}>{(result.risk_score * 100).toFixed(1)}%</div>
-        <div className="risk-meter">
-          <div className={`risk-meter-fill ${tier}`} style={{ width: `${result.risk_score * 100}%` }} />
+    <Card className="overflow-hidden flex flex-col h-full border-2 shadow-md relative" style={{ borderColor: `var(--color-${tier === 'CRITICAL' ? 'risk-critical' : tier === 'HIGH' ? 'risk-high' : tier === 'MEDIUM' ? 'amber-500' : 'risk-low'})` }}>
+      <div className={`p-6 flex flex-col items-center justify-center ${getTierColor(tier)} relative overflow-hidden`}>
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white to-transparent"></div>
+        <div className="relative z-10 flex flex-col items-center">
+          <Badge variant="outline" className="mb-2 bg-white/20 hover:bg-white/30 text-white border-white/30 shadow-sm backdrop-blur-sm px-3 py-1 text-xs tracking-widest font-bold">
+            {tier} RISK
+          </Badge>
+          <div className="text-5xl font-black tabular-nums tracking-tight">
+            {(result.risk_score * 100).toFixed(1)}%
+          </div>
         </div>
       </div>
-      <div className="result-body">
-        <div className="risk-factors-title">Top Risk Factors</div>
-        {result.top_risk_factors?.map((f, i) => (
-          <div key={i} className={`risk-factor ${f.direction}`}>
-            <span className="risk-factor-icon">{f.direction === 'increases_risk' ? '⚠️' : '✅'}</span>
-            <span>{f.feature}</span>
-          </div>
-        ))}
-        
-        {/* LLM Auto-Responder Email Draft */}
-        {alertDraft && (
-          <div style={{ marginTop: '24px', padding: '16px', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)' }}>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              🤖 Auto-Generated Alert Email
+      
+      <CardContent className="p-6 flex-1 flex flex-col">
+        <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Key Risk Drivers</h4>
+        <div className="space-y-3 mb-6">
+          {result.top_risk_factors?.map((f, i) => (
+            <div key={i} className="flex items-start gap-3 bg-secondary/50 p-3 rounded-md border border-border/50">
+              <div className="mt-0.5">
+                {f.direction === 'increases_risk' ? 
+                  <TriangleAlert className="h-4 w-4 text-destructive" /> : 
+                  <CircleCheck className="h-4 w-4 text-green-500" />
+                }
+              </div>
+              <span className="text-sm font-medium leading-tight">{f.feature}</span>
             </div>
-            <div style={{ whiteSpace: 'pre-wrap', fontSize: '13px', lineHeight: 1.6, color: 'var(--text)' }}>
+          ))}
+        </div>
+        
+        {alertDraft && (
+          <div className="mt-auto pt-4 border-t">
+            <div className="text-xs font-bold text-muted-foreground mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+              <Mail className="h-3.5 w-3.5" /> Auto-Generated Alert Email
+            </div>
+            <div className="text-sm p-4 bg-muted/50 rounded-lg border border-border whitespace-pre-wrap font-mono leading-relaxed max-h-48 overflow-y-auto">
               {alertDraft}
             </div>
           </div>
         )}
-        
-        <div className="result-footer">
-          <div>Scored at {new Date(result.scored_at).toLocaleTimeString()}</div>
-          
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button 
-              onClick={handleGenerateAlert} 
-              disabled={alertLoading}
-              style={{ 
-                padding: '6px 12px', 
-                background: 'var(--bg-secondary)', 
-                border: '1px solid var(--border)', 
-                borderRadius: 'var(--radius-sm)', 
-                fontSize: '12px', 
-                cursor: alertLoading ? 'wait' : 'pointer',
-                color: 'var(--text)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              {alertLoading ? 'Generating...' : '🤖 Draft Alert Email'}
-            </button>
-            <div className={`scoring-mode-badge ${result.scoring_mode}`}>
-              {result.scoring_mode === 'production' ? '● Model Active' : '○ Demo Mode'}
-            </div>
-          </div>
+      </CardContent>
+
+      <CardFooter className="bg-muted/30 border-t p-4 flex items-center justify-between">
+        <div className="text-xs text-muted-foreground font-medium">
+          Scored at {new Date(result.scored_at).toLocaleTimeString()}
         </div>
-      </div>
-    </div>
+        
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleGenerateAlert} 
+            disabled={alertLoading}
+            className="font-semibold shadow-sm"
+          >
+            {alertLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
+            {alertLoading ? 'Drafting...' : 'Draft Alert Email'}
+          </Button>
+          <Badge variant="secondary" className="font-mono text-[10px]">
+            {result.scoring_mode === 'production' ? 'PROD' : 'DEMO'}
+          </Badge>
+        </div>
+      </CardFooter>
+    </Card>
   )
 }
 
@@ -475,42 +574,45 @@ function EdaGallery() {
   ).slice(0, 8)
 
   return (
-    <div>
-      <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>📊 Selected Exploratory Data Analysis</h2>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
-        Validated plots from the IEEE-CIS dataset — all generated on raw data before encoding
-      </p>
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight">Exploratory Data Analysis</h2>
+        <p className="text-muted-foreground mt-1">
+          Validated plots from the IEEE-CIS dataset — all generated on raw data before encoding
+        </p>
+      </div>
 
       <ErrorBanner message={error} onDismiss={() => setError(null)} />
 
       {allPlots.length > 0 ? (
-        <div className="eda-gallery">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {allPlots.map((p, i) => (
-            <div key={i} className="eda-plot-card" onClick={() => setSelectedPlot(p.url)}>
-              <div className="eda-plot-image-wrapper">
-                <img src={p.url} alt={p.file} loading="lazy" />
+            <Card key={i} className="cursor-pointer overflow-hidden group border hover:border-primary transition-all shadow-sm hover:shadow-md" onClick={() => setSelectedPlot(p.url)}>
+              <div className="aspect-video bg-muted relative overflow-hidden">
+                <img src={p.url} alt={p.file} loading="lazy" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
               </div>
-              <div className="eda-plot-label">{formatName(p.file)}</div>
-            </div>
+              <CardFooter className="p-3 bg-card border-t">
+                <span className="text-sm font-semibold truncate capitalize" title={formatName(p.file)}>{formatName(p.file)}</span>
+              </CardFooter>
+            </Card>
           ))}
         </div>
       ) : !error ? (
-        <div className="card" style={{ textAlign: 'center', padding: 48 }}>
-          <div style={{ fontSize: 48, opacity: 0.3, marginBottom: 12 }}>📊</div>
-          <p style={{ color: 'var(--text-muted)' }}>
-            Ensure the FastAPI backend is running at <code>{API_BASE}</code>
+        <Card className="flex flex-col items-center justify-center py-20 text-center border-dashed">
+          <BarChart3 className="h-16 w-16 text-muted-foreground/30 mb-4" />
+          <h3 className="text-lg font-medium text-foreground">No plots available</h3>
+          <p className="text-sm text-muted-foreground mt-2 max-w-sm">
+            Ensure the FastAPI backend is running at <code className="bg-muted px-1.5 py-0.5 rounded text-primary">{API_BASE}</code>
           </p>
-        </div>
+        </Card>
       ) : null}
 
-      {selectedPlot && (
-        <div className="lightbox-overlay" onClick={() => setSelectedPlot(null)}>
-          <div className="lightbox-content" onClick={e => e.stopPropagation()}>
-            <button className="lightbox-close" onClick={() => setSelectedPlot(null)}>✕</button>
-            <img src={selectedPlot} alt="EDA Plot" className="lightbox-img" />
-          </div>
-        </div>
-      )}
+      <Dialog open={!!selectedPlot} onOpenChange={(open) => !open && setSelectedPlot(null)}>
+        <DialogContent className="max-w-4xl p-1 bg-black/90 border-none shadow-2xl">
+          <img src={selectedPlot} alt="EDA Plot full size" className="w-full h-auto max-h-[85vh] object-contain rounded-md" />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
@@ -526,6 +628,7 @@ function BatchScoringPanel() {
   
   const [activeDraft, setActiveDraft] = useState(null)
   const [draftLoadingId, setDraftLoadingId] = useState(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   const handleGenerateBatchAlert = async (txn) => {
     setDraftLoadingId(txn.TransactionID || 'unknown')
@@ -542,8 +645,10 @@ function BatchScoringPanel() {
         ]
       })
       setActiveDraft(draft.email_draft)
+      toast.success("Draft created for " + (txn.TransactionID || 'transaction'))
     } catch (err) {
       setError("Failed to generate alert email: " + err.message)
+      toast.error("Failed to generate draft")
     } finally {
       setDraftLoadingId(null)
     }
@@ -562,6 +667,7 @@ function BatchScoringPanel() {
 
   const handleDrop = (e) => {
     e.preventDefault()
+    setIsDragging(false)
     const selected = e.dataTransfer.files[0]
     if (selected && selected.name.endsWith('.csv')) {
       setFile(selected)
@@ -578,8 +684,10 @@ function BatchScoringPanel() {
     try {
       const res = await scoreCsvBatch(file)
       setResult(res)
+      toast.success(`Batch processed successfully: ${res.summary.total} transactions`)
     } catch (err) {
       setError(err.message || "Failed to process batch CSV.")
+      toast.error("Batch processing failed")
     } finally {
       setLoading(false)
     }
@@ -592,180 +700,207 @@ function BatchScoringPanel() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
       <ErrorBanner message={error} onDismiss={() => setError(null)} />
 
       {!result ? (
-        <div className="card" style={{ padding: '40px' }}>
-          <div className="card-title" style={{ textAlign: 'center', fontSize: 18, marginBottom: 8 }}>
-            📁 Upload Batch CSV for Deep ML Scoring
-          </div>
-          <div style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: 24, fontSize: 14 }}>
-            Upload a full historical data dump (434 features) to run through the XGBoost + LightGBM ensemble.
-          </div>
-          
-          <div 
-            className={`upload-zone ${file ? 'has-file' : ''}`}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDrop}
-          >
-            <input 
-              type="file" 
-              id="csv-upload" 
-              accept=".csv" 
-              style={{ display: 'none' }} 
-              onChange={handleFileChange}
-            />
-            <label htmlFor="csv-upload" className="upload-label">
-              <div style={{ fontSize: 40, marginBottom: 12 }}>{file ? '📄' : '📥'}</div>
-              <div style={{ fontWeight: 600, fontSize: 16 }}>
-                {file ? file.name : "Drag & Drop CSV here"}
-              </div>
-              <div style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>
-                {file ? `${(file.size / 1024).toFixed(1)} KB` : "or click to browse"}
-              </div>
-            </label>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
-            <button 
-              className={`btn-score ${loading ? 'loading' : ''}`}
-              style={{ maxWidth: 200 }}
-              onClick={handleUpload}
-              disabled={!file || loading}
+        <Card className="max-w-3xl mx-auto shadow-md">
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-2xl flex items-center justify-center gap-2">
+              <FileDown className="h-6 w-6 text-primary" />
+              Batch CSV Scoring
+            </CardTitle>
+            <CardDescription className="text-base">
+              Upload a full historical data dump to run through the XGBoost + LightGBM ensemble.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6 pb-8">
+            <div 
+              className={`border-2 border-dashed rounded-xl p-12 text-center transition-all duration-200 ${
+                isDragging ? 'border-primary bg-primary/5 scale-[1.02]' : 
+                file ? 'border-green-500/50 bg-green-500/5' : 'border-border hover:bg-muted/50'
+              }`}
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
             >
-              {loading ? '' : '🚀 Process Batch'}
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="batch-results">
-          <div className="card" style={{ marginBottom: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <div className="card-title" style={{ margin: 0 }}>📊 Batch Summary</div>
-              <button onClick={reset} style={{ background: 'transparent', border: '1px solid var(--border)', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', color: 'var(--text)' }}>
-                Upload Another
-              </button>
+              <input 
+                type="file" 
+                id="csv-upload" 
+                accept=".csv" 
+                className="hidden" 
+                onChange={handleFileChange}
+              />
+              <label htmlFor="csv-upload" className="cursor-pointer flex flex-col items-center">
+                <div className={`p-4 rounded-full mb-4 ${file ? 'bg-green-500/10 text-green-500' : 'bg-primary/10 text-primary'}`}>
+                  {file ? <CheckCircle2 className="h-10 w-10" /> : <Upload className="h-10 w-10" />}
+                </div>
+                <div className="text-lg font-bold mb-1">
+                  {file ? file.name : "Drag & Drop CSV here"}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {file ? `${(file.size / 1024).toFixed(1)} KB` : "or click to browse from your computer"}
+                </div>
+              </label>
             </div>
-            
-            <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', marginBottom: 20 }}>
-              <div className="stat-card blue">
-                <div className="stat-label">Total Processed</div>
-                <div className="stat-value">{result.summary.total}</div>
-                <div className="stat-change" style={{ color: 'var(--text-muted)' }}>Transactions</div>
-              </div>
-              <div className="stat-card green">
-                <div className="stat-label">Mean Risk Score</div>
-                <div className="stat-value">{(result.summary.mean_score * 100).toFixed(2)}%</div>
-                <div className="stat-change" style={{ color: 'var(--text-muted)' }}>Average</div>
-              </div>
-              <div className="stat-card orange">
-                <div className="stat-label">High Risk</div>
-                <div className="stat-value">{result.summary.tier_distribution.HIGH || 0}</div>
-                <div className="stat-change" style={{ color: 'var(--text-muted)' }}>Transactions</div>
-              </div>
-              <div className="stat-card red">
-                <div className="stat-label">Critical Risk</div>
-                <div className="stat-value">{result.summary.tier_distribution.CRITICAL || 0}</div>
-                <div className="stat-change" style={{ color: 'var(--text-muted)' }}>Transactions</div>
-              </div>
-            </div>
-          </div>
 
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <div className="card-title" style={{ padding: '20px 24px', margin: 0, borderBottom: '1px solid var(--border)' }}>
-              Detailed Results (Top 100 by Risk)
+            <div className="flex justify-center mt-8">
+              <Button 
+                size="lg"
+                className="min-w-[200px] font-bold shadow-md hover:shadow-lg transition-shadow"
+                onClick={handleUpload}
+                disabled={!file || loading}
+              >
+                {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Zap className="mr-2 h-5 w-5" />}
+                {loading ? 'Processing Batch...' : 'Run Analysis'}
+              </Button>
             </div>
-            <div style={{ overflowX: 'auto' }}>
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Txn ID / Email</th>
-                    <th>Amount</th>
-                    <th>Card & Product</th>
-                    <th>Risk Score</th>
-                    <th>Risk Tier</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-6">
+          <Card className="shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between pb-4 border-b">
+              <div>
+                <CardTitle className="text-xl">Batch Summary</CardTitle>
+                <CardDescription>Processed {file?.name}</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" onClick={reset}>
+                Upload Another
+              </Button>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-blue-500/10 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                  <div className="text-sm font-medium text-blue-700 dark:text-blue-400">Total Processed</div>
+                  <div className="text-3xl font-bold mt-1 text-foreground">{result.summary.total}</div>
+                </div>
+                <div className="bg-green-500/10 border-l-4 border-green-500 p-4 rounded-r-lg">
+                  <div className="text-sm font-medium text-green-700 dark:text-green-400">Mean Risk Score</div>
+                  <div className="text-3xl font-bold mt-1 text-foreground">{(result.summary.mean_score * 100).toFixed(2)}%</div>
+                </div>
+                <div className="bg-orange-500/10 border-l-4 border-orange-500 p-4 rounded-r-lg">
+                  <div className="text-sm font-medium text-orange-700 dark:text-orange-400">High Risk</div>
+                  <div className="text-3xl font-bold mt-1 text-foreground">{result.summary.tier_distribution.HIGH || 0}</div>
+                </div>
+                <div className="bg-red-500/10 border-l-4 border-red-500 p-4 rounded-r-lg">
+                  <div className="text-sm font-medium text-red-700 dark:text-red-400">Critical Risk</div>
+                  <div className="text-3xl font-bold mt-1 text-foreground">{result.summary.tier_distribution.CRITICAL || 0}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-md overflow-hidden">
+            <CardHeader className="bg-muted/30 border-b py-4">
+              <CardTitle className="text-lg">Detailed Results <span className="text-muted-foreground text-sm font-normal ml-2">(Top 100 by Risk)</span></CardTitle>
+            </CardHeader>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Txn ID / Email</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Card & Product</TableHead>
+                    <TableHead>Risk Score</TableHead>
+                    <TableHead>Risk Tier</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {result.results.map((r, i) => (
-                    <tr key={i}>
-                      <td>
-                        <div style={{ fontWeight: 500 }}>{r.TransactionID || 'Unknown'}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.P_emaildomain || 'N/A'}</div>
-                      </td>
-                      <td style={{ fontWeight: 500 }}>${(r.TransactionAmt || 0).toFixed(2)}</td>
-                      <td>
-                        <div style={{ textTransform: 'capitalize' }}>{(r.card4 || 'Unknown')} {(r.card6 || '')}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Product: {r.ProductCD || 'N/A'}</div>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ width: 45 }}>{(r.risk_score * 100).toFixed(1)}%</span>
-                          <div className="risk-meter" style={{ width: 60, height: 6 }}>
-                            <div className={`risk-meter-fill ${r.risk_tier}`} style={{ width: `${Math.max(5, r.risk_score * 100)}%` }} />
+                    <TableRow key={i} className="hover:bg-muted/50 transition-colors">
+                      <TableCell>
+                        <div className="font-semibold">{r.TransactionID || 'Unknown'}</div>
+                        <div className="text-xs text-muted-foreground">{r.P_emaildomain || 'N/A'}</div>
+                      </TableCell>
+                      <TableCell className="font-medium font-mono">${(r.TransactionAmt || 0).toFixed(2)}</TableCell>
+                      <TableCell>
+                        <div className="capitalize font-medium">{(r.card4 || 'Unknown')} {(r.card6 || '')}</div>
+                        <div className="text-xs text-muted-foreground">Product: {r.ProductCD || 'N/A'}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <span className="w-12 font-bold tabular-nums">{(r.risk_score * 100).toFixed(1)}%</span>
+                          <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full ${r.risk_tier === 'CRITICAL' ? 'bg-risk-critical' : r.risk_tier === 'HIGH' ? 'bg-risk-high' : r.risk_tier === 'MEDIUM' ? 'bg-amber-500' : 'bg-risk-low'}`} 
+                              style={{ width: `${Math.max(5, r.risk_score * 100)}%` }} 
+                            />
                           </div>
                         </div>
-                      </td>
-                      <td>
-                        <span className={`tier-badge ${r.risk_tier}`}>{r.risk_tier}</span>
-                      </td>
-                      <td>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={r.risk_tier === 'CRITICAL' ? 'destructive' : r.risk_tier === 'HIGH' ? 'destructive' : r.risk_tier === 'MEDIUM' ? 'default' : 'secondary'}
+                          className={`${r.risk_tier === 'MEDIUM' ? 'bg-amber-500 hover:bg-amber-600' : ''}`}>
+                          {r.risk_tier}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
                         {r.risk_score >= 0.85 ? (
-                          <button 
+                          <Button 
+                            size="sm"
+                            variant="destructive"
                             onClick={() => handleGenerateBatchAlert(r)}
                             disabled={draftLoadingId === (r.TransactionID || 'unknown')}
-                            style={{ fontSize: '11px', background: 'var(--risk-critical)', border: 'none', color: 'white', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}
+                            className="text-xs h-8 shadow-sm"
                           >
-                            {draftLoadingId === (r.TransactionID || 'unknown') ? 'Loading...' : '✉️ View Auto-Emailed Alert'}
-                          </button>
+                            {draftLoadingId === (r.TransactionID || 'unknown') ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Mail className="h-3 w-3 mr-1" />}
+                            View Alert
+                          </Button>
                         ) : (r.risk_tier === 'CRITICAL' || r.risk_tier === 'HIGH') ? (
-                          <button 
+                          <Button 
+                            size="sm"
+                            variant="outline"
                             onClick={() => handleGenerateBatchAlert(r)}
                             disabled={draftLoadingId === (r.TransactionID || 'unknown')}
-                            style={{ fontSize: '11px', background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text)', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}
+                            className="text-xs h-8"
                           >
-                            {draftLoadingId === (r.TransactionID || 'unknown') ? 'Loading...' : 'Draft Email'}
-                          </button>
+                            {draftLoadingId === (r.TransactionID || 'unknown') ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : null}
+                            Draft Email
+                          </Button>
                         ) : (
-                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>No Action</span>
+                          <span className="text-xs text-muted-foreground">No Action</span>
                         )}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
                   {result.results.length === 0 && (
-                    <tr>
-                      <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
                         No results to display.
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   )}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
-      {/* Email Draft Modal */}
-      {activeDraft && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div className="card" style={{ maxWidth: 600, width: '90%', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <div className="card-title" style={{ margin: 0 }}>🤖 AI-Drafted Payout Hold Notice</div>
-              <button onClick={() => setActiveDraft(null)} style={{ background: 'transparent', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--text)' }}>✕</button>
-            </div>
-            <div style={{ whiteSpace: 'pre-wrap', fontSize: '14px', lineHeight: 1.6, color: 'var(--text)', background: 'var(--bg-secondary)', padding: 16, borderRadius: 8, border: '1px solid var(--border)' }}>
-              {activeDraft}
-            </div>
-            <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-              <button onClick={() => setActiveDraft(null)} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer', color: 'var(--text)' }}>Close</button>
-              <button onClick={() => setActiveDraft(null)} className="btn-score">Send to Merchant</button>
-            </div>
+      {/* Email Draft Dialog */}
+      <Dialog open={!!activeDraft} onOpenChange={(open) => !open && setActiveDraft(null)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5 text-primary" /> AI-Drafted Payout Hold Notice
+            </DialogTitle>
+          </DialogHeader>
+          <div className="bg-muted p-4 rounded-md font-mono text-sm whitespace-pre-wrap max-h-[50vh] overflow-y-auto border border-border">
+            {activeDraft}
           </div>
-        </div>
-      )}
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setActiveDraft(null)}>Cancel</Button>
+            <Button onClick={() => {
+              setActiveDraft(null)
+              toast.success("Draft sent to merchant")
+            }}>
+              Send to Merchant
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
@@ -774,7 +909,6 @@ function BatchScoringPanel() {
 // APP
 // ══════════════════════════════════════════════════════════
 function App() {
-  const [tab, setTab] = useState('score')
   const [health, setHealth] = useState(null)
   const [modelInfo, setModelInfo] = useState(null)
   const [connectionError, setConnectionError] = useState(null)
@@ -797,9 +931,9 @@ function App() {
   }, [])
 
   return (
-    <div className="app">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary/20">
       <Header health={health} connectionError={connectionError} />
-      <main className="main">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-7xl">
         {connectionError && (
           <ErrorBanner
             message={connectionError}
@@ -807,23 +941,26 @@ function App() {
           />
         )}
         <StatsOverview modelInfo={modelInfo} />
-        <div className="tabs">
-          <button className={`tab ${tab === 'score' ? 'active' : ''}`} onClick={() => setTab('score')}>
-            ⚡ Risk Scorer
-          </button>
-          <button className={`tab ${tab === 'batch' ? 'active' : ''}`} onClick={() => setTab('batch')}>
-            📁 Batch CSV Scoring
-          </button>
-          <button className={`tab ${tab === 'eda' ? 'active' : ''}`} onClick={() => setTab('eda')}>
-            📊 EDA Gallery
-          </button>
-        </div>
-
-        {tab === 'score' && <ScoringPanel />}
-        {tab === 'batch' && <BatchScoringPanel />}
-        {tab === 'eda' && <EdaGallery />}
+        
+        <Tabs defaultValue="score" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-8 bg-secondary/50 p-1">
+            <TabsTrigger value="score" className="font-semibold">⚡ Risk Scorer</TabsTrigger>
+            <TabsTrigger value="batch" className="font-semibold">📁 Batch CSV</TabsTrigger>
+            <TabsTrigger value="eda" className="font-semibold">📊 EDA Gallery</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="score" className="mt-0 outline-none">
+            <ScoringPanel />
+          </TabsContent>
+          <TabsContent value="batch" className="mt-0 outline-none">
+            <BatchScoringPanel />
+          </TabsContent>
+          <TabsContent value="eda" className="mt-0 outline-none">
+            <EdaGallery />
+          </TabsContent>
+        </Tabs>
       </main>
-
+      <Toaster position="top-right" closeButton richColors />
     </div>
   )
 }
