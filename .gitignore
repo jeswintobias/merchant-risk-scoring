@@ -48,3 +48,6 @@ Thumbs.db
 # Agents / IDE config
 .agents/
 .gemini/
+
+# Environment Variables
+.env
