@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Risk Manager - Presentation</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #3b82f6; /* Blue */
+            --color-secondary: #8b5cf6; /* Purple */
+            --color-background: #09090b; /* Zinc 950 */
+            --color-card: #18181b; /* Zinc 900 */
+            --primitive-gradient-primary: linear-gradient(135deg, #60a5fa, #c084fc);
+            --typography-font-heading: 'Space Grotesk', sans-serif;
+            --typography-font-body: 'Inter', sans-serif;
+        }
+
+        /* Base slide styles */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--color-background);
+            color: #fafafa;
+            font-family: var(--typography-font-body);
+            overflow: hidden;
+        }
+
+        /* 16:9 Aspect Ratio Container */
+        .slide-deck {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        @media (min-width: 769px) {
+            .slide-deck {
+                max-width: calc(100vh * 16 / 9);
+                max-height: calc(100vw * 9 / 16);
+                margin: auto;
+                position: absolute;
+                inset: 0;
+            }
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 60px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease-in-out;
+            background: var(--color-background);
+            overflow: hidden;
+        }
+
+        .slide.active { opacity: 1; visibility: visible; }
+
+        .slide-content {
+            width: 100%;
+            max-width: 1000px;
+            max-height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+        }
+
+        /* Typography */
+        h1, h2, h3 { font-family: var(--typography-font-heading); }
+        .slide-title {
+            font-size: clamp(36px, 6vw, 72px);
+            background: var(--primitive-gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+        
+        h2 { font-size: clamp(24px, 4vw, 42px); font-weight: 600; color: #f4f4f5; }
+        p, li { font-size: clamp(16px, 2vw, 22px); color: #a1a1aa; line-height: 1.6; }
+        
+        /* Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            width: 100%;
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .card {
+            background: var(--color-card);
+            border: 1px solid #27272a;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card h3 {
+            color: #60a5fa;
+            font-size: 24px;
+        }
+        
+        ul { padding-left: 24px; display: flex; flex-direction: column; gap: 12px; }
+
+        /* Animation Classes */
+        .animate-stagger > * {
+            opacity: 0;
+            animation: fadeUp 0.6s ease-out forwards;
+        }
+        .animate-stagger > *:nth-child(1) { animation-delay: 0.2s; }
+        .animate-stagger > *:nth-child(2) { animation-delay: 0.4s; }
+        .animate-stagger > *:nth-child(3) { animation-delay: 0.6s; }
+        .animate-stagger > *:nth-child(4) { animation-delay: 0.8s; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Navigation */
+        .progress-bar {
+            position: fixed;
+            top: 0; left: 0;
+            height: 4px;
+            background: var(--primitive-gradient-primary);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+        }
+        .nav-controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 1000;
+            background: rgba(24, 24, 27, 0.8);
+            backdrop-filter: blur(8px);
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 1px solid #3f3f46;
+        }
+        .nav-btn {
+            background: rgba(255,255,255,0.05);
+            border: none;
+            color: #fff;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover { background: rgba(255,255,255,0.15); transform: scale(1.05); }
+        .slide-counter { color: #a1a1aa; font-size: 14px; font-weight: 600; font-family: var(--typography-font-heading); }
+        
+        .watermark {
+            position: absolute;
+            top: 30px;
+            left: 40px;
+            font-family: var(--typography-font-heading);
+            font-size: 18px;
+            font-weight: 700;
+            color: #52525b;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="slide-deck">
+
+        <!-- Slide 1: Hook -->
+        <div class="slide active">
+            <div class="watermark">TRACK 02</div>
+            <div class="slide-content animate-stagger">
+                <h1 class="slide-title">Merchant Risk Engine</h1>
+                <h2>Post-Onboarding Fraud Detection & Mitigation</h2>
+                <p style="margin-top: 20px; max-width: 600px;">An AI-driven solution to identify chargebacks, analyze risk with SHAP explainability, and automate merchant communication.</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: The Core Problem -->
+        <div class="slide">
+            <div class="watermark">THE PROBLEM</div>
+            <div class="slide-content animate-stagger" style="align-items: flex-start; text-align: left;">
+                <h2>The False-Positive Dilemma</h2>
+                <p>Payment aggregators face a constant balancing act between preventing fraud and ruining the merchant experience.</p>
+                
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>Missed Fraud Costs</h3>
+                        <ul>
+                            <li>Direct financial loss via chargebacks</li>
+                            <li>Network penalties from Visa/Mastercard</li>
+                            <li>Reputational damage to the aggregator</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3 style="color: #f87171;">Customer Friction</h3>
+                        <ul>
+                            <li>Payout holds on legitimate merchants</li>
+                            <li>Increased manual review costs ($50+ per case)</li>
+                            <li>Merchant churn due to poor experience</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Architecture -->
+        <div class="slide">
+            <div class="watermark">SYSTEM ARCHITECTURE</div>
+            <div class="slide-content animate-stagger" style="align-items: flex-start; text-align: left;">
+                <h2>End-to-End MLOps Stack</h2>
+                <p>Built for scale, explainability, and rapid human-in-the-loop processing.</p>
+                
+                <div class="grid-2">
+                    <div class="card" style="justify-content: center;">
+                        <h3 style="color: #a78bfa;">1. Machine Learning Core</h3>
+                        <p>Ensemble of <strong>XGBoost (70%)</strong> and <strong>LightGBM (30%)</strong> trained on 590K IEEE-CIS transactions.</p>
+                    </div>
+                    <div class="card" style="justify-content: center;">
+                        <h3 style="color: #4ade80;">2. AI Automation Layer</h3>
+                        <p><strong>Gemini API</strong> interprets high-risk factors and automatically drafts contextual payout hold notices.</p>
+                    </div>
+                    <div class="card" style="justify-content: center;">
+                        <h3 style="color: #60a5fa;">3. Modern Infrastructure</h3>
+                        <p>Asynchronous <strong>FastAPI</strong> backend and reactive <strong>React/Vite</strong> frontend, containerized with Docker.</p>
+                    </div>
+                    <div class="card" style="justify-content: center;">
+                        <h3 style="color: #fb923c;">4. Total Explainability</h3>
+                        <p>Native <strong>SHAP</strong> (SHapley Additive exPlanations) values to justify every risk score mathematically.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Metrics Visualization -->
+        <div class="slide">
+            <div class="watermark">PERFORMANCE METRICS</div>
+            <div class="slide-content animate-stagger">
+                <h2>Model Precision & Recall</h2>
+                <p style="margin-bottom: 20px;">By tuning the threshold, we achieved 94.2% precision on high-risk flags.</p>
+                
+                <div class="card" style="width: 100%; height: 350px; padding: 20px; align-items: center;">
+                    <canvas id="precisionChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Transition to Demo -->
+        <div class="slide">
+            <div class="watermark">LIVE DEMO</div>
+            <div class="slide-content animate-stagger">
+                <div style="font-size: 80px; margin-bottom: 20px;">🚀</div>
+                <h1 class="slide-title" style="font-size: 60px;">System Walkthrough</h1>
+                <h2>Let's see the Risk Scorer in action.</h2>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="nav-controls">
+        <button class="nav-btn" onclick="prevSlide()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <span class="slide-counter"><span id="current">1</span> / <span id="total">5</span></span>
+        <button class="nav-btn" onclick="nextSlide()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+    </div>
+
+    <script>
+        // Navigation Logic
+        let current = 1;
+        const total = document.querySelectorAll('.slide').length;
+        document.getElementById('total').textContent = total;
+
+        function showSlide(n) {
+            if (n < 1) n = 1;
+            if (n > total) n = total;
+            current = n;
+            document.querySelectorAll('.slide').forEach((s, i) => {
+                s.classList.toggle('active', i === n - 1);
+            });
+            document.getElementById('current').textContent = n;
+            document.getElementById('progressBar').style.width = (n / total * 100) + '%';
+        }
+
+        function nextSlide() { showSlide(current + 1); }
+        function prevSlide() { showSlide(current - 1); }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        });
+
+        // Initialize Chart.js on Slide 4
+        const ctx = document.getElementById('precisionChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9'],
+                datasets: [
+                    {
+                        label: 'Precision',
+                        data: [0.35, 0.52, 0.68, 0.81, 0.94, 0.96, 0.98, 0.99, 1.0],
+                        borderColor: '#60a5fa',
+                        backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Recall',
+                        data: [0.99, 0.95, 0.89, 0.82, 0.74, 0.65, 0.52, 0.38, 0.15],
+                        borderColor: '#c084fc',
+                        borderWidth: 3,
+                        borderDash: [5, 5],
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { labels: { color: '#e4e4e7', font: { family: 'Inter', size: 14 } } } 
+                },
+                scales: {
+                    x: { 
+                        title: { display: true, text: 'Risk Threshold', color: '#a1a1aa' },
+                        grid: { color: 'rgba(255,255,255,0.05)' }, 
+                        ticks: { color: '#a1a1aa' } 
+                    },
+                    y: { 
+                        title: { display: true, text: 'Score', color: '#a1a1aa' },
+                        grid: { color: 'rgba(255,255,255,0.05)' }, 
+                        ticks: { color: '#a1a1aa' } 
+                    }
+                }
+            }
+        });
+
+        showSlide(1);
+    </script>
+</body>
+</html>

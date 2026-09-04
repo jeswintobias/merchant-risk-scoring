@@ -38,6 +38,11 @@ This project was built explicitly to satisfy the **RazorPay Track 02** requireme
 
 ## Quick Start (Docker)
 
+**Prerequisite: API Key**
+Since the project relies on Gemini 1.5 Pro for the AI Auto-Responder, you must provide your own API key. 
+1. Create a `.env` file in the root directory.
+2. Add the following line: `GEMINI_API_KEY=your_api_key_here`
+
 The easiest way to run the entire stack (Backend + Frontend) is via Docker Compose:
 
 ```bash
