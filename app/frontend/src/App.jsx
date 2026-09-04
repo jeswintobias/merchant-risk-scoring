@@ -182,18 +182,18 @@ function StatsOverview({ modelInfo }) {
   ]
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
       {stats.map((s, i) => (
         <Card key={i} className="shadow-sm hover:shadow transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3.5 pb-0">
             <CardTitle className="text-sm font-medium">
               {s.label}
             </CardTitle>
             {s.icon}
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{s.value}</div>
-            <p className="text-xs text-muted-foreground mt-1">
+          <CardContent className="p-3.5 pt-2">
+            <div className="text-xl font-bold leading-none">{s.value}</div>
+            <p className="text-[10px] text-muted-foreground mt-1">
               {s.change}
             </p>
           </CardContent>
@@ -310,11 +310,11 @@ function ScoringPanel() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-3">
       <ErrorBanner message={error} onDismiss={() => setError(null)} />
 
-      <Card className="bg-secondary/20 shadow-none border-border">
-        <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <Card className="bg-secondary/20 shadow-none border-border mb-2">
+        <CardContent className="p-2 flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <div className="text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
             <span className="text-xl">🎭</span> Quick Test Profile:
           </div>
@@ -322,7 +322,7 @@ function ScoringPanel() {
             const m = demoMerchants.find(x => x.name === val)
             if (m) handleDemoClick(m)
           }}>
-            <SelectTrigger className="w-full sm:max-w-[400px] bg-background">
+            <SelectTrigger className="h-8 text-sm w-full sm:max-w-[400px] bg-background">
               <SelectValue placeholder="Select a demo profile to autofill..." />
             </SelectTrigger>
             <SelectContent>
@@ -334,7 +334,7 @@ function ScoringPanel() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
@@ -344,24 +344,24 @@ function ScoringPanel() {
             <CardDescription>Enter transaction details below to run deep ML scoring.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2 md:col-span-2">
-                  <Label>Merchant Name</Label>
-                  <Input placeholder="e.g. Sharma Electronics, Jaipur"
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1 col-span-3">
+                  <Label className="text-xs">Merchant Name</Label>
+                  <Input className="h-8 text-sm" placeholder="e.g. Sharma Electronics, Jaipur"
                     value={form.merchant_name}
                     onChange={e => handleChange('merchant_name', e.target.value)} />
                 </div>
-                <div className="space-y-2">
-                  <Label>Amount (USD)</Label>
-                  <Input type="number" step="0.01" placeholder="45.99"
+                <div className="space-y-1">
+                  <Label className="text-xs">Amount (USD)</Label>
+                  <Input className="h-8 text-sm" type="number" step="0.01" placeholder="45.99"
                     value={form.transaction_amount}
                     onChange={e => handleChange('transaction_amount', e.target.value)} />
                 </div>
-                <div className="space-y-2">
-                  <Label>Product Code</Label>
+                <div className="space-y-1">
+                  <Label className="text-xs">Product Code</Label>
                   <Select value={form.product_cd} onValueChange={v => handleChange('product_cd', v)}>
-                    <SelectTrigger><SelectValue/></SelectTrigger>
+                    <SelectTrigger className="h-8 text-sm"><SelectValue/></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="W">W — Web</SelectItem>
                       <SelectItem value="H">H — High Value</SelectItem>
@@ -371,10 +371,10 @@ function ScoringPanel() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label>Card Brand</Label>
+                <div className="space-y-1">
+                  <Label className="text-xs">Card Brand</Label>
                   <Select value={form.card_brand} onValueChange={v => handleChange('card_brand', v)}>
-                    <SelectTrigger className="capitalize"><SelectValue/></SelectTrigger>
+                    <SelectTrigger className="capitalize h-8 text-sm"><SelectValue/></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="visa">Visa</SelectItem>
                       <SelectItem value="mastercard">Mastercard</SelectItem>
@@ -383,20 +383,20 @@ function ScoringPanel() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label>Card Type</Label>
+                <div className="space-y-1">
+                  <Label className="text-xs">Card Type</Label>
                   <Select value={form.card_type} onValueChange={v => handleChange('card_type', v)}>
-                    <SelectTrigger className="capitalize"><SelectValue/></SelectTrigger>
+                    <SelectTrigger className="capitalize h-8 text-sm"><SelectValue/></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="debit">Debit</SelectItem>
                       <SelectItem value="credit">Credit</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label>Email Domain</Label>
+                <div className="space-y-1">
+                  <Label className="text-xs">Email Domain</Label>
                   <Select value={form.email_domain} onValueChange={v => handleChange('email_domain', v)}>
-                    <SelectTrigger><SelectValue/></SelectTrigger>
+                    <SelectTrigger className="h-8 text-sm"><SelectValue/></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="gmail.com">gmail.com</SelectItem>
                       <SelectItem value="yahoo.com">yahoo.com</SelectItem>
@@ -408,27 +408,27 @@ function ScoringPanel() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label>Device Type</Label>
+                <div className="space-y-1">
+                  <Label className="text-xs">Device Type</Label>
                   <Select value={form.device_type} onValueChange={v => handleChange('device_type', v)}>
-                    <SelectTrigger className="capitalize"><SelectValue/></SelectTrigger>
+                    <SelectTrigger className="capitalize h-8 text-sm"><SelectValue/></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="desktop">Desktop</SelectItem>
                       <SelectItem value="mobile">Mobile</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label>Hour of Day (0-23)</Label>
-                  <Input type="number" min="0" max="23"
+                <div className="space-y-1 col-span-2">
+                  <Label className="text-xs">Hour of Day (0-23)</Label>
+                  <Input className="h-8 text-sm" type="number" min="0" max="23"
                     value={form.hour_of_day}
                     onChange={e => handleChange('hour_of_day', e.target.value)} />
                 </div>
-                <div className="flex items-center space-x-2 pt-8">
+                <div className="flex items-center space-x-2 pt-6">
                   <input type="checkbox" id="intl" className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                     checked={form.is_international}
                     onChange={e => handleChange('is_international', e.target.checked)} />
-                  <Label htmlFor="intl" className="cursor-pointer">International Transaction</Label>
+                  <Label htmlFor="intl" className="cursor-pointer text-xs">International</Label>
                 </div>
               </div>
               <Button type="submit" className="w-full font-bold" size="lg" disabled={loading}>
@@ -569,9 +569,11 @@ function EdaGallery() {
 
   const formatName = (name) => name.replace(/[_-]/g, ' ').replace('.png', '')
 
-  const allPlots = Object.entries(plots).flatMap(([category, files]) =>
-    files.map(f => ({ category, file: f, url: `${API_BASE}/api/eda/plot/${category}/${f}` }))
-  ).slice(0, 8)
+  const allPlots = Object.entries(plots)
+    .filter(([category]) => category === 'eda')
+    .flatMap(([category, files]) =>
+      files.map(f => ({ category, file: f, url: `${API_BASE}/api/eda/plot/${category}/${f}` }))
+    ).slice(0, 8)
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -611,6 +613,72 @@ function EdaGallery() {
       <Dialog open={!!selectedPlot} onOpenChange={(open) => !open && setSelectedPlot(null)}>
         <DialogContent className="max-w-4xl p-1 bg-black/90 border-none shadow-2xl">
           <img src={selectedPlot} alt="EDA Plot full size" className="w-full h-auto max-h-[85vh] object-contain rounded-md" />
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+
+// ══════════════════════════════════════════════════════════
+// METRICS GALLERY TAB
+// ══════════════════════════════════════════════════════════
+function MetricsGallery() {
+  const [plots, setPlots] = useState({})
+  const [selectedPlot, setSelectedPlot] = useState(null)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    getEdaPlots()
+      .then(setPlots)
+      .catch(err => {
+        setPlots({})
+        setError(err.message)
+      })
+  }, [])
+
+  const formatName = (name) => name.replace(/[_-]/g, ' ').replace('.png', '')
+
+  const allPlots = Object.entries(plots)
+    .filter(([category]) => category === 'model_evaluation' || category === 'shap')
+    .flatMap(([category, files]) =>
+      files.map(f => ({ category, file: f, url: `${API_BASE}/api/eda/plot/${category}/${f}` }))
+    )
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight">Model Metrics & Explainability</h2>
+        <p className="text-muted-foreground mt-1">
+          Precision-Recall curves, confusion matrices, and SHAP explainability generated from XGBoost and LightGBM ensemble.
+        </p>
+      </div>
+
+      <ErrorBanner message={error} onDismiss={() => setError(null)} />
+
+      {allPlots.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {allPlots.map((p, i) => (
+            <Card key={i} className="cursor-pointer overflow-hidden group border hover:border-primary transition-all shadow-sm hover:shadow-md" onClick={() => setSelectedPlot(p.url)}>
+              <div className="aspect-video bg-muted relative overflow-hidden">
+                <img src={p.url} alt={p.file} loading="lazy" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+              </div>
+              <CardFooter className="p-3 bg-card border-t">
+                <span className="text-sm font-semibold truncate capitalize" title={formatName(p.file)}>{formatName(p.file)}</span>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      ) : !error ? (
+        <Card className="flex flex-col items-center justify-center py-20 text-center border-dashed">
+          <BarChart3 className="h-16 w-16 text-muted-foreground/30 mb-4" />
+          <h3 className="text-lg font-medium text-foreground">No plots available</h3>
+        </Card>
+      ) : null}
+
+      <Dialog open={!!selectedPlot} onOpenChange={(open) => !open && setSelectedPlot(null)}>
+        <DialogContent className="max-w-4xl p-1 bg-black/90 border-none shadow-2xl">
+          <img src={selectedPlot} alt="Plot full size" className="w-full h-auto max-h-[85vh] object-contain rounded-md" />
         </DialogContent>
       </Dialog>
     </div>
@@ -714,9 +782,9 @@ function BatchScoringPanel() {
               Upload a full historical data dump to run through the XGBoost + LightGBM ensemble.
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-6 pb-8">
+          <CardContent className="pt-6 pb-6">
             <div 
-              className={`border-2 border-dashed rounded-xl p-12 text-center transition-all duration-200 ${
+              className={`border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 ${
                 isDragging ? 'border-primary bg-primary/5 scale-[1.02]' : 
                 file ? 'border-green-500/50 bg-green-500/5' : 'border-border hover:bg-muted/50'
               }`}
@@ -933,7 +1001,7 @@ function App() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary/20">
       <Header health={health} connectionError={connectionError} />
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-7xl">
+      <main className="flex-1 container mx-auto px-4 py-4 max-w-7xl">
         {connectionError && (
           <ErrorBanner
             message={connectionError}
@@ -943,9 +1011,10 @@ function App() {
         <StatsOverview modelInfo={modelInfo} />
         
         <Tabs defaultValue="score" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8 bg-secondary/50 p-1">
+          <TabsList className="grid w-full grid-cols-4 mb-4 bg-secondary/50 p-1">
             <TabsTrigger value="score" className="font-semibold">⚡ Risk Scorer</TabsTrigger>
             <TabsTrigger value="batch" className="font-semibold">📁 Batch CSV</TabsTrigger>
+            <TabsTrigger value="metrics" className="font-semibold">📈 Metrics Overview</TabsTrigger>
             <TabsTrigger value="eda" className="font-semibold">📊 EDA Gallery</TabsTrigger>
           </TabsList>
           
@@ -954,6 +1023,9 @@ function App() {
           </TabsContent>
           <TabsContent value="batch" className="mt-0 outline-none">
             <BatchScoringPanel />
+          </TabsContent>
+          <TabsContent value="metrics" className="mt-0 outline-none">
+            <MetricsGallery />
           </TabsContent>
           <TabsContent value="eda" className="mt-0 outline-none">
             <EdaGallery />
