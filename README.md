@@ -179,6 +179,14 @@ Place in `data/ieee-fraud-detection/`
 3. **LLM Context Limits (The SHAP Solution)**: Feeding a raw transaction with 434 columns to an LLM to generate an email is highly inefficient and causes hallucinations. I overcame this by integrating SHAP (Explainable AI) to mathematically extract only the top 5 risk-driving features, drastically reducing the LLM prompt size while increasing email accuracy.
 4. **Docker Architecture & System Incompatibilities**: Containerizing a heavy ML stack on Apple Silicon presented significant challenges. I encountered a severe serialization bug where XGBoost models trained natively on Python 3.12 crashed when loaded inside a Python 3.10 Docker container. This required debugging multi-architecture base images and strictly aligning environment versions across the host and container to achieve a flawless production build.
 
+## References
+
+1. Killeen, B., Tran, M. T., & Pakana, F. (2026). Chargeback Fraud Detection on Anonymised Merchant Data: An Industry Case Study.
+2. Guo, X., Dong, L., Li, Y., Wang, Y., Zhang, P., & Zhu, Z. (2026). Trust-Aware Enterprise Credit Risk Prediction via Variational Autoencoder in Supply Chain Finance.
+3. Raju, C. G., Jagadeesha, N., Sharma, S., Sharma, S., Raj, Y., Shetty, T. G., & Premnath, B. (2026). Merchant Fraud Detection Using Machine Learning on Structured Transaction Data.
+4. Cai, X., Dai, W., & Lu, J. (2025). Loan Default Prediction Based on Machine Learning Approaches.
+5. He, Y. (2025). Auto Loan Defaults: Predictive Modeling and Key Drivers.
+
 ---
 
 **RazorPay AI Buildathon 2026** | Post-Onboarding Merchant Risk Detection
